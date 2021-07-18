@@ -19,7 +19,6 @@ const articlePost = async (req, res) => {
     const [err, result] = await to(articleModule.createArticle(insertValues))
 
     if (err) {
-        console.log(typeof err)
         res.send(err) // 失敗回傳錯誤訊息
     } else {
         res.send(result)

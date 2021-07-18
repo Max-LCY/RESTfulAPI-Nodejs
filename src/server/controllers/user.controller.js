@@ -1,11 +1,16 @@
 // user.controller.js
 import to from 'await-to-js'
+import bcrypt from 'bcrypt'
 import userModule from '../modules/user.module'
 
 /* User  POST 新增 */
 const userPost = async (req, res) => {
     // 取得新增參數
-    const insertValues = req.body
+    const insertValues = {
+        user_name: req.body.user_name,
+        user_mail: req.body.user_mail,
+        user_password: bcrypt.hashSync(req.body.user_password, 10), // 密碼加密
+    }
 
     const [err, result] = await to(userModule.createUser(insertValues))
 
