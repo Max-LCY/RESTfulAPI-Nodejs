@@ -1,5 +1,6 @@
 import express from 'express'
 import mysql from 'mysql'
+import { ValidationError } from 'express-validation'
 import config from '../../config/config'
 import article from './article.route'
 import user from './user.route'
@@ -11,6 +12,15 @@ router.use('/article', article)
 
 /** User Router */
 router.use('/user', user)
+
+router.use((err, req, res, next) => {
+    if (err instanceof ValidationError) {
+        console.log(err)
+        return res.status(err.statusCode).json(err)
+    }
+    console.log(err)
+    return res.status(500).json(err)
+})
 
 /* GET localhost:[port]/api page. */
 router.get('/', (req, res) => {

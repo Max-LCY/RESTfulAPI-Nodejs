@@ -11,6 +11,7 @@ const articleGet = async (req, res) => {
         res.send(result)
     }
 }
+
 /* Article  POST 新增 */
 const articlePost = async (req, res) => {
     // 取得新增參數
@@ -18,6 +19,7 @@ const articlePost = async (req, res) => {
     const [err, result] = await to(articleModule.createArticle(insertValues))
 
     if (err) {
+        console.log(typeof err)
         res.send(err) // 失敗回傳錯誤訊息
     } else {
         res.send(result)

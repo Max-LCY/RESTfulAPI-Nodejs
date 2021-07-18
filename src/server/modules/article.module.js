@@ -48,7 +48,7 @@ const createArticle = (insertValues) => {
             if (connectionError) {
                 reject(connectionError) // 若連線有問題回傳錯誤
             } else {
-                const query = connection.query(
+                connection.query(
                     'INSERT INTO Article SET ?',
                     insertValues,
                     (error, result) => {
