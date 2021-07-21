@@ -17,4 +17,6 @@ router
     .put(userCtrl.userPut) /** 修改 User 值組 */
     .delete(userCtrl.userDelete) /** 刪除 User 值組 */
 
+router.route('/login').post(userCtrl.userLogin)
+
 export default router

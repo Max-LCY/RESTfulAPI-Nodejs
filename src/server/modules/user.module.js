@@ -1,14 +1,18 @@
 // user.module.js
 import mysql from 'mysql'
+import bcrypt from 'bcrypt'
+import jwt from 'jsonwebtoken'
 import config from '../../config/config'
+import APPError from '../helper/AppError'
 
 const connectionPool = mysql.createPool({
     connectionLimit: 10,
     host: config.mysqlHost,
     user: config.mysqlUserName,
     password: config.mysqlPass,
-    database: config.mysqlDatabase,
+    database: config.mysqlDatabase
 })
+
 /* User  POST 新增 */
 const createUser = (insertValues) => {
     return new Promise((resolve, reject) => {
@@ -45,10 +49,7 @@ const selectUser = () => {
             } else {
                 connection.query(
                     // User撈取所有欄位的值組
-                    `SELECT
-            *
-          FROM
-            User`,
+                    'SELECT * FROM User',
                     (error, result) => {
                         if (error) {
                             console.error('SQL error: ', error)
@@ -124,9 +125,71 @@ const deleteUser = (userId) => {
     })
 }
 
+const selectUserLogin = (insertValues) => {
+    return new Promise((resolve, reject) => {
+        connectionPool.getConnection((connectionError, connection) => {
+            // 資料庫連線
+            if (connectionError) {
+                reject(connectionError) // 若連線有問題回傳錯誤
+            } else {
+                connection.query(
+                    // User撈取所有欄位的值組
+                    'SELECT * FROM User WHERE user_mail = ?',
+                    insertValues.user_mail,
+                    (error, result) => {
+                        if (error) {
+                            console.error('SQL error: ', error)
+                            reject(error) // 寫入資料庫有問題時回傳錯誤
+                        } else if (Object.keys(result).length === 0) {
+                            reject(new APPError.LoginError1())
+                        } else {
+                            const dbHashPassword = result[0].user_password // 資料庫加密後的密碼
+                            const userPassword = insertValues.user_password // 使用者登入輸入的密碼
+                            bcrypt
+                                .compare(userPassword, dbHashPassword)
+                                .then((res) => {
+                                    // 使用bcrypt做解密驗證
+                                    if (res) {
+                                        // 產生 JWT
+                                        const payload = {
+                                            user_id: result[0].user_id,
+                                            user_name: result[0].user_name,
+                                            user_mail: result[0].user_mail
+                                        }
+                                        // 取得 API Token
+                                        const token = jwt.sign(
+                                            {
+                                                payload,
+                                                exp:
+                                                    Math.floor(Date.now() / 1000) + 60 * 15
+                                            },
+                                            'my_secret_key'
+                                        )
+
+                                        resolve(
+                                            {
+                                                code: 200,
+                                                message: '登入成功',
+                                                token
+                                            }
+                                        ) // 登入成功
+                                    } else {
+                                        reject(new APPError.LoginError2()) // 登入失敗
+                                    }
+                                })
+                        }
+                        connection.release()
+                    }
+                )
+            }
+        })
+    })
+}
+
 export default {
     createUser,
     selectUser,
     modifyUser,
     deleteUser,
+    selectUserLogin
 }

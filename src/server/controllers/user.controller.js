@@ -58,9 +58,22 @@ const userDelete = async (req, res) => {
     }
 }
 
+const userLogin = async (req, res, next) => {
+    const insertValues = req.body
+    // 取得新增參數
+    const [err, result] = await to(userModule.selectUserLogin(insertValues))
+
+    if (err) {
+        next(err) // 失敗回傳錯誤訊息
+    } else {
+        res.send(result)
+    }
+}
+
 export default {
     userPost,
     userGet,
     userPut,
     userDelete,
+    userLogin,
 }

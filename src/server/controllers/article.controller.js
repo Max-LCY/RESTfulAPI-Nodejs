@@ -2,6 +2,18 @@
 import to from 'await-to-js'
 import articleModule from '../modules/article.module'
 
+const articlePersonalGet = async (req, res) => {
+    const [err, result] = await to(
+        articleModule.selectPersonalArticle(req.token)
+    )
+
+    if (err) {
+        res.status(401).send(err) // 失敗回傳錯誤訊息
+    } else {
+        res.send(result)
+    }
+}
+
 const articleGet = async (req, res) => {
     const [err, result] = await to(articleModule.selectArticle())
 
@@ -59,4 +71,5 @@ export default {
     articlePost,
     articlePut,
     articleDelete,
+    articlePersonalGet,
 }
